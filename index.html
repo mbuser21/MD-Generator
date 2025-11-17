@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Banner Generator Preview</title>
+    <!-- Library for converting HTML to image for download --><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Reverting to Tinos font for a classic, professional look --><link href="https://fonts.googleapis.com/css2?family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS Variables based on user request */
+        :root {
+            --theme-color: #73A441; /* Primary Green */
+            --dark-green: #3D5523; /* Dark accent for name/contact bar */
+            --light-bg: #EAEAEF;
+            --text-color-dark: #333;
+            --text-color-light: #f7f7f7;
+            --text-color-specialty: #D03D3D; /* Red color for specialties */
+        }
+
+        body {
+            /* Reverted font family back to Tinos */
+            font-family: 'Tinos', serif;
+            background-color: var(--light-bg);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        /* --- Controls (Input Form) Styling - MODERNIZED --- */
+        #controls {
+            width: 30%;
+            min-width: 320px; /* Slightly wider */
+            padding: 30px; /* Increased padding */
+            background-color: white;
+            /* Enhanced, modern shadow */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
+            border-radius: 16px; /* More rounded corners */
+            margin-right: 30px;
+            /* Removed unnecessary bottom margin from h2 */
+        }
+
+        /* Styling for Labels */
+        #controls label {
+            display: block;
+            width: 100%;
+            margin-bottom: 6px; 
+            margin-top: 15px;
+            font-weight: 700; /* Bolder label */
+            color: var(--dark-green);
+            font-size: 0.95em;
+        }
+
+        /* Styling for Inputs and Textareas */
+        #controls input, #controls textarea {
+            display: block;
+            width: 100%;
+            margin-bottom: 18px; 
+            box-sizing: border-box;
+            border-radius: 8px; 
+            border: 1px solid #ccc;
+            padding: 12px 15px; /* Larger padding */
+            transition: all 0.2s ease-in-out;
+            font-size: 1em;
+            color: var(--text-color-dark);
+        }
+        
+        /* Focus effect for inputs */
+        #controls input:focus, #controls textarea:focus {
+            outline: none;
+            border-color: var(--theme-color);
+            box-shadow: 0 0 0 3px rgba(115, 164, 65, 0.3); 
+        }
+
+        #controls textarea { 
+            height: 90px; /* Slightly taller textarea */
+            resize: vertical; 
+        } 
+        
+        /* Button Styling */
+        #controls button {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 8px;
+            color: white;
+            padding: 14px; 
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+        
+        /* Generate Button (Primary) */
+        #controls button:first-of-type { 
+            background-color: var(--theme-color);
+            margin-top: 30px;
+        }
+
+        /* Download Button (Secondary, Darker Green) */
+        #controls button:nth-of-type(2) { 
+            background-color: var(--dark-green);
+            margin-top: 10px;
+        }
+
+        #controls button:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* --- Banner Container and Layout --- */
+        #banner-container {
+            width: 70%;
+            max-width: 900px; 
+            /* Reduced height 10% (now 20% taller than original 16:9) */
+            aspect-ratio: 16 / 10.8; 
+            box-shadow: 0 0 25px rgba(0,0,0,0.4);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #medical-banner {
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            position: relative;
+            color: var(--text-color-dark);
+            padding: 0;
+            box-sizing: border-box;
+            /* UPDATED: Subtle diagonal line pattern for the white area (lighter color) */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cdefs%3E%3Cpattern id='diagonal-lines' width='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(45)'%3E%3Cline x1='0' y1='0' x2='0' y2='10' stroke='%23f7f7f7' stroke-width='1' /%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23diagonal-lines)'/%3E%3C/svg%3E");
+        }
+
+        /* --- Right Background Zone (20% width, Simple Backdrop) --- */
+        .right-green-zone {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20%; /* White section takes 80% */
+            height: 100%;
+            background-color: var(--theme-color);
+            z-index: 5; 
+            /* Subtle geometric pattern for background graphics */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23648e3d' fill-opacity='0.2'%3E%3Cpath fill-rule='evenodd' d='M0 0h40v40H0V0zm40 40h40v40H40V40z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        /* --- Top Left Section: Logo --- */
+        .banner-top-left {
+            position: absolute;
+            top: 4%; /* Reduced gap */
+            left: 4%;
+            z-index: 20;
+        }
+
+        .logo-svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        /* --- Doctor Photo (Moved to middle of both sections, vertically centered) --- */
+        .doctor-photo-circle {
+            position: absolute;
+            top: 34%; 
+            left: 84%; 
+            transform: translateY(-50%); 
+            width: 18vw; 
+            height: 18vw; 
+            max-width: 160px; 
+            max-height: 160px;
+            border-radius: 50%;
+            overflow: hidden;
+            /* REDUCED BORDER to 6px */
+            border: 6px solid white; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            background-color: var(--light-bg);
+            z-index: 10; 
+        }
+
+        #outputDoctorImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top; 
+        }
+
+        /* --- Specialties Section (Left Side - High Priority) --- */
+        .specialties-section {
+            position: absolute;
+            top: 12%; 
+            left: 4%;
+            width: 70%; 
+            padding: 10px 0;
+            z-index: 5;
+        }
+
+        #outputSpecialties {
+            font-size: 20px !important; 
+            line-height: 1.2;
+            color: var(--text-color-specialty);
+            font-weight: 700;
+        }
+
+        /* --- Doctor Info Section (Left Side - Name & Degrees) --- */
+        .doctor-info-section {
+            position: absolute;
+            top: 24%; /* Moved up from 32% to 24% */
+            left: 4%;
+            width: 70%; 
+            z-index: 5;
+        }
+        
+        /* Thin separator line below specialties/above name */
+        .info-separator {
+            width: 100%;
+            height: 3px;
+            background-color: var(--theme-color);
+            margin: 10px 0 20px 0;
+            border-radius: 1.5px;
+        }
+
+        #outputDoctorName {
+            /* Highlighted: Increased size and added subtle text shadow */
+            font-size: 2.5vw; 
+            color: var(--dark-green);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 10px; 
+            text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.2);
+        }
+
+        .degrees-list {
+            font-size: 1.4vw; 
+            line-height: 1.8; 
+            color: var(--text-color-dark);
+            padding-right: 5%; 
+        }
+
+        /* --- Contact Info Section (Full Width Bottom Bar) --- */
+        .contact-info-section {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%; 
+            padding: 20px 4%;
+            background-color: var(--dark-green);
+            color: var(--text-color-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            z-index: 20;
+        }
+
+        .address-box {
+            width: 65%; 
+            font-size: 1.5vw;
+            line-height: 1.5;
+            border-left: 5px solid white;
+            padding-left: 15px;
+        }
+
+        .contact-box {
+            width: 30%; 
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .contact-label {
+            /* UPDATED: Increased font size to approximate 15-18px for better visibility */
+            font-size: 1.3vw; 
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 3px;
+        }
+
+        .contact-number {
+            /* Slightly adjusted font size for taller banner */
+            font-size: 2.3vw; 
+            font-weight: 700;
+            color: var(--text-color-light);
+            padding: 0 5px; 
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="controls">
+        <h2>Banner Input Form</h2>
+        <form id="bannerForm">
+            <!-- Doctor Info --><label for="doctorName">Doctor's Name:</label>
+            <input type="text" id="doctorName" value="লেঃ কর্নেল ডঃ মোঃ আব্দুল্লাহ আল মামুন" placeholder="Doctor's Name"><br>
+
+            <label for="specialties">Specialties (Use Enter/Newline for line breaks):</label>
+            <textarea id="specialties" placeholder="Specialties">লিভার, পরিপাকতন্ত্র, মেডিসিন
+ও ডায়াবেটিস বিশেষজ্ঞ</textarea><br>
+
+            <!-- Academic/Professional Degrees --><label for="degrees">Degrees & Affiliation (Use Enter/Newline for new line):</label>
+            <textarea id="degrees" placeholder="Degrees & Affiliation">এমবিবিএস (ঢাকা), এফসিপিএস (মেডিসিন)
+এফসিপিএস (গ্যাস্ট্রোএন্টারোলজি, শেষ পর্ব)
+সহযোগী অধ্যাপক ও মেডিসিন বিশেষজ্ঞ
+সম্মিলিত সামরিক হাসপাতাল (সিএমএইচ) ঢাকা।</textarea><br>
+
+            <label for="address">Address (Use Enter/Newline for line breaks):</label>
+            <textarea id="address" placeholder="Address">১০৪০/২ক, পূর্ব শেওড়াপাড়া, মিরপুর, ঢাকা-১২১৬
+২৯৯ নং পিলারের পূর্ব পাশে</textarea><br>
+
+            <label for="contact">Contact Number (সিরিয়ালের জন্য):</label>
+            <input type="text" id="contact" value="০১৭৬৩ ৮০০০০০" placeholder="Contact Number"><br>
+
+            <label for="imageUpload">Doctor Image (Upload):</label>
+            <input type="file" id="imageUpload" accept="image/*"><br>
+            
+            <button type="button" onclick="generateBanner()">Generate Banner</button>
+            <button type="button" onclick="downloadBanner()">Download as PNG (High Quality)</button>
+        </form>
+    </div>
+
+    <div id="banner-container">
+        <!-- The Banner Output Area --><div id="medical-banner">
+            
+            <!-- Right Green Zone (Background for Photo) --><div class="right-green-zone"></div>
+            
+            <!-- Doctor Photo (Moved to middle of both sections, vertically centered) --><div class="doctor-photo-circle">
+                <!-- Placeholder doctor image (Themed for better look) --><img id="outputDoctorImage" src="https://placehold.co/300x300/3D5523/FFFFFF?text=Doctor" alt="Doctor Photo">
+            </div>
+
+            <!-- Logo Section --><div class="banner-top-left">
+                <div class="logo-section">
+                    <!-- Stylized Leaf/Medical Cross SVG Logo --><svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 0C30 0 10 20 10 40C10 70 50 100 50 100C50 100 90 70 90 40C90 20 70 0 50 0Z" fill="var(--dark-green)"/>
+                        <rect x="45" y="30" width="10" height="20" fill="white"/>
+                        <rect x="40" y="35" width="20" height="10" fill="white"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Specialties Section --><div class="specialties-section">
+                <h2 id="outputSpecialties"></h2>
+            </div>
+
+            <!-- Doctor Info Section (Name & Degrees) --><div class="doctor-info-section">
+                <div class="info-separator"></div>
+                <h3 id="outputDoctorName"></h3>
+                <div id="outputDegrees" class="degrees-list"></div>
+            </div>
+
+            <!-- Contact Info Section (Full Width Bottom Bar) --><div class="contact-info-section">
+                <div class="address-box">
+                    <div id="outputAddress"></div>
+                </div>
+                <div class="contact-box">
+                    <div class="contact-label">সিরিয়ালের জন্য</div>
+                    <div id="outputContact" class="contact-number"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to generate the banner content
+        function generateBanner() {
+            // Get values from the form
+            const doctorName = document.getElementById('doctorName').value;
+            const specialties = document.getElementById('specialties').value;
+            const degrees = document.getElementById('degrees').value;
+            const address = document.getElementById('address').value;
+            const contact = document.getElementById('contact').value;
+            const imageFile = document.getElementById('imageUpload').files[0];
+
+            // Update the banner elements
+            
+            // Replace newline characters with <br> for proper HTML display
+            document.getElementById('outputSpecialties').innerHTML = specialties.replace(/\n/g, '<br>');
+            document.getElementById('outputDoctorName').innerHTML = doctorName.replace(/\n/g, '<br>');
+            document.getElementById('outputDegrees').innerHTML = degrees.replace(/\n/g, '<br>');
+            document.getElementById('outputAddress').innerHTML = address.replace(/\n/g, '<br>');
+            document.getElementById('outputContact').innerText = contact;
+
+            // Handle image upload
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('outputDoctorImage').src = e.target.result;
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                // Set a default placeholder if no image is uploaded (using themed placeholder)
+                document.getElementById('outputDoctorImage').src = 'https://placehold.co/300x300/3D5523/FFFFFF?text=Doctor'; 
+            }
+        }
+
+        // Function for downloading as PNG using html2canvas (reliable browser conversion)
+        function downloadBanner() {
+            const banner = document.getElementById('medical-banner');
+            const doctorName = document.getElementById('doctorName').value.trim();
+            
+            // Minimal Sanitization: Only remove characters that are strictly invalid in file paths 
+            // (slashes, colons, question marks, etc.) but keep all Unicode characters (Bangla) intact.
+            const cleanName = doctorName.replace(/[\\/:*?"<>|]/g, '').trim(); 
+            
+            const fileName = (cleanName || 'medical_banner') + '.png'; 
+
+            // Use html2canvas to render the content to a canvas
+            html2canvas(banner, {
+                // Increase scale for higher resolution output (e.g., 3x resolution)
+                scale: 3 
+            }).then(function(canvas) {
+                // Convert the canvas to a PNG image data URL
+                const dataUrl = canvas.toDataURL('image/png', 1.0);
+                
+                // Create a temporary link element for download
+                const link = document.createElement('a');
+                link.download = fileName; // Set the dynamic Bengali filename
+                link.href = dataUrl;
+                link.click();
+
+                console.log(`Downloaded banner as ${fileName}.`);
+            });
+        }
+
+        // Initial banner generation on load
+        window.onload = generateBanner;
+    </script>
+
+</body>
+</html>
