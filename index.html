@@ -52,16 +52,16 @@
             margin: 0; /* Remove default margin from h2 inside header */
         }
 
-        /* Enable Grid Layout for the form */
+        /* Enable Grid Layout for the form - All inputs are now 2 columns by default */
         #bannerForm {
             display: grid;
             grid-template-columns: repeat(2, 1fr); /* Two equal columns */
             gap: 20px 30px; /* Row gap and Column gap */
         }
 
-        /* Full width elements span both columns */
-        .form-group.full-width,
-        #controls button {
+        /* Full width elements span both columns (Only for button group) */
+        #controls button,
+        .button-group {
             grid-column: 1 / -1;
         }
 
@@ -74,7 +74,7 @@
             display: block;
             width: 100%;
             margin-bottom: 6px; 
-            margin-top: 0; /* Removed top margin, controlled by grid gap */
+            margin-top: 0; 
             font-weight: 700; 
             color: var(--dark-green);
             font-size: 0.95em;
@@ -84,7 +84,7 @@
         #controls input, #controls textarea {
             display: block;
             width: 100%;
-            margin-bottom: 0; /* Controlled by grid gap */
+            margin-bottom: 0; 
             box-sizing: border-box;
             border-radius: 8px; 
             border: 1px solid #ccc;
@@ -119,7 +119,7 @@
             font-weight: bold;
             transition: all 0.3s ease;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            margin-top: 0; /* Reset, controlled by grid gap */
+            margin-top: 0; 
         }
         
         /* Generate Button (Primary) */
@@ -131,7 +131,6 @@
         /* Download Button (Secondary, Darker Green) */
         #controls button:nth-of-type(2) { 
             background-color: var(--dark-green);
-            /* margin-top is handled by grid gap (20px) */
         }
 
         #controls button:hover {
@@ -154,8 +153,8 @@
 
         /* --- Banner Container and Layout - FIXED DIMENSIONS --- */
         #banner-container {
-            width: 800px; /* Reduced Fixed width */
-            height: 508px; /* Reduced Fixed height */
+            width: 800px; /* Fixed width */
+            height: 508px; /* Fixed height */
             max-width: none; 
             aspect-ratio: auto; 
             box-shadow: 0 0 25px rgba(0,0,0,0.4);
@@ -164,13 +163,14 @@
         }
 
         #medical-banner {
-           width: 100%;
-    height: 100%;
-    background-color: white;
-    position: relative;
-    color: var(--text-color-dark);
-    padding: 0;
-    box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            position: relative;
+            color: var(--text-color-dark);
+            padding: 0;
+            box-sizing: border-box;
+          
     background-image: url(l.png);
     background-position: 443px 172px;
     background-repeat: no-repeat;
@@ -186,6 +186,7 @@
             height: 100%;
             background-color: var(--theme-color);
             z-index: 5; 
+            /* Pattern for green zone */
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23648e3d' fill-opacity='0.2'%3E%3Cpath fill-rule='evenodd' d='M0 0h40v40H0V0zm40 40h40v40H40V40z'/%3E%3C/g%3E%3C/svg%3E");
         }
         
@@ -197,19 +198,14 @@
             z-index: 20;
         }
 
-        .logo-svg {
-            width: 40px;
-            height: 40px;
-        }
-
         /* --- Doctor Photo - FIXED SIZE --- */
         .doctor-photo-circle {
             position: absolute;
-            top: 25%; 
-            left: 72%; 
+            top: 19%; 
+            left: 70%; 
             transform: translateY(-50%); 
-            width: 140px; /* Slightly reduced for 800px container */
-            height: 140px; /* Slightly reduced for 800px container */
+            width: 140px; 
+            height: 140px; 
             max-width: none; 
             max-height: none;
             border-radius: 50%;
@@ -238,7 +234,7 @@
         }
 
         #outputSpecialties {
-            font-size: 24px !important; /* Slightly reduced font size */
+            font-size: 24px !important; 
             line-height: 1.2;
             color: var(--text-color-specialty);
             font-weight: 700;
@@ -263,7 +259,7 @@
         }
 
         #outputDoctorName {
-            font-size: 30px; /* Slightly reduced font size */
+            font-size: 30px; 
             color: var(--dark-green);
             font-weight: 700;
             line-height: 1.2;
@@ -273,7 +269,7 @@
 
         .degrees-list {
             font-size: 17px; 
-            line-height: 1.7; /* Adjusted line height */
+            line-height: 1.7; 
             color: var(--text-color-dark);
             padding-right: 5%; 
         }
@@ -284,7 +280,7 @@
             bottom: 0;
             left: 0;
             width: 100%; 
-            padding: 15px 4%; /* Reduced padding */
+            padding: 15px 4%; 
             background-color: var(--dark-green);
             color: var(--text-color-light);
             display: flex;
@@ -296,7 +292,7 @@
 
         .address-box {
             width: 65%; 
-            font-size: 14px; /* Reduced font size */
+            font-size: 14px; 
             line-height: 1.4;
             border-left: 5px solid white;
             padding-left: 15px;
@@ -311,14 +307,14 @@
         }
         
         .contact-label {
-            font-size: 13px; /* Reduced font size */
+            font-size: 13px; 
             font-weight: 400;
             color: rgba(255, 255, 255, 0.7);
             margin-bottom: 3px;
         }
 
         .contact-number {
-            font-size: 20px; /* Reduced font size */
+            font-size: 20px; 
             font-weight: 700;
             color: var(--text-color-light);
             padding: 0 5px; 
@@ -334,45 +330,40 @@
         </div>
         <form id="bannerForm">
             
-            <!-- Column 1: Doctor's Name -->
+            <!-- Row 1, Col 1: Doctor's Name -->
             <div class="form-group">
                 <label for="doctorName">Doctor's Name:</label>
                 <input type="text" id="doctorName" value="" placeholder="Doctor's Name">
             </div>
 
-            <!-- Column 2: Contact Number -->
+            <!-- Row 1, Col 2: Specialties (NOW SINGLE-LINE INPUT) -->
+            <div class="form-group">
+                <label for="specialties">Specialties (Single Line):</label>
+                <input type="text" id="specialties" placeholder="Specialties">
+            </div>
+
+            <!-- Row 2, Col 1: Degrees & Affiliation (Textarea) -->
+            <div class="form-group">
+                <label for="degrees">Degrees & Affiliation (Use Enter/Newline for new line):</label>
+                <textarea id="degrees" placeholder="Degrees & Affiliation"></textarea>
+            </div>
+
+            <!-- Row 2, Col 2: Address (Textarea) -->
+            <div class="form-group">
+                <label for="address">Address (Use Enter/Newline for line breaks):</label>
+                <textarea id="address" placeholder="Address"></textarea>
+            </div>
+            
+            <!-- Row 3, Col 1: Contact Number (MOVED HERE) -->
             <div class="form-group">
                 <label for="contact">Contact Number (সিরিয়ালের জন্য):</label>
                 <input type="text" id="contact" value="" placeholder="Contact Number">
             </div>
 
-            <!-- Full Width Row: Specialties (Textarea) -->
-            <div class="form-group full-width">
-                <label for="specialties">Specialties (Use Enter/Newline for line breaks):</label>
-                <input type="text" id="specialties" placeholder="Specialties"></textarea>
-            </div>
-
-            <!-- Full Width Row: Degrees & Affiliation (Textarea) -->
-            <div class="form-group full-width">
-                <label for="degrees">Degrees & Affiliation (Use Enter/Newline for new line):</label>
-                <textarea id="degrees" placeholder="Degrees & Affiliation"></textarea>
-            </div>
-
-            <!-- Full Width Row: Address (Textarea) -->
-            <div class="form-group full-width">
-                <label for="address">Address (Use Enter/Newline for line breaks):</label>
-                <textarea id="address" placeholder="Address"></textarea>
-            </div>
-            
-            <!-- Column 1 (Left): Doctor Image Upload -->
+            <!-- Row 3, Col 2: Doctor Image Upload -->
             <div class="form-group">
                 <label for="imageUpload">Doctor Image (Upload):</label>
                 <input type="file" id="imageUpload" accept="image/*">
-            </div>
-
-            <!-- Column 2 (Right): Empty/Spacing (Left blank) -->
-            <div class="form-group">
-                <!-- Empty for alignment or future use -->
             </div>
 
             <!-- Full Width Button Group -->
@@ -393,7 +384,6 @@
             </div>
 
             <!-- Logo Section --><div class="banner-top-left">
-               
             </div>
             
             <!-- Specialties Section --><div class="specialties-section">
@@ -431,9 +421,10 @@
 
             // Update the banner elements
             
-            // Replace newline characters with <br> for proper HTML display, 
-            // use a default value for specialties if empty to prevent empty heading tag
-            document.getElementById('outputSpecialties').innerHTML = specialties ? specialties.replace(/\n/g, '<br>') : "বিশেষজ্ঞ (Specialist)";
+            // Specialties is now a single-line input. Use innerText.
+            document.getElementById('outputSpecialties').innerText = specialties || "বিশেষজ্ঞ (Specialist)";
+            
+            // Keep newline replacement for Doctor Name, Degrees, and Address (which are still multi-line fields)
             document.getElementById('outputDoctorName').innerHTML = doctorName ? doctorName.replace(/\n/g, '<br>') : "Doctor Name";
             document.getElementById('outputDegrees').innerHTML = degrees ? degrees.replace(/\n/g, '<br>') : "Degrees and Affiliations";
             document.getElementById('outputAddress').innerHTML = address ? address.replace(/\n/g, '<br>') : "Clinic Address, City, Post Code";
@@ -458,7 +449,6 @@
             const doctorName = document.getElementById('doctorName').value.trim();
             
             // Minimal Sanitization: Only remove characters that are strictly invalid in file paths 
-            // (slashes, colons, question marks, etc.) but keep all Unicode characters (Bangla) intact.
             const cleanName = doctorName.replace(/[\\/:*?"<>|]/g, '').trim(); 
             
             const fileName = (cleanName || 'medical_banner') + '.png'; 
