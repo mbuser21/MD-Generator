@@ -1,479 +1,450 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MD Banner Generator Preview</title>
-    <!-- Library for converting HTML to image for download --><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Reverting to Tinos font for a classic, professional look --><link href="https://fonts.googleapis.com/css2?family=Tinos:wght@400;700&display=swap" rel="stylesheet">
-    
+    <title>ডাক্তার ব্যানার জেনারেটর</title>
     <style>
-        /* CSS Variables based on user request */
-        :root {
-            --theme-color: #73A441; /* Primary Green */
-            --dark-green: #3D5523; /* Dark accent for name/contact bar */
-            --light-bg: #EAEAEF;
-            --text-color-dark: #333;
-            --text-color-light: #f7f7f7;
-            --text-color-specialty: #D03D3D; /* Red color for specialties */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Tinos', serif;
-            background-color: var(--light-bg);
-            /* Centering the entire content */
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            flex-wrap: wrap; 
+            font-family: 'Kalpurush', 'Noto Sans Bengali', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
         }
 
-        /* --- Controls (Input Form) Styling - FIXED WIDTH --- */
-        #controls {
-            width: 800px; /* Adjusted Fixed width to match new banner width (800px) */
-            min-width: 800px; 
-            padding: 30px; 
-            background-color: white;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
-            border-radius: 16px; 
-            margin-bottom: 30px; 
-        }
-
-        /* Header for title and clear button */
-        .controls-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px; 
-        }
-
-        #controls h2 {
-            margin: 0; /* Remove default margin from h2 inside header */
-        }
-
-        /* Enable Grid Layout for the form - All inputs are now 2 columns by default */
-        #bannerForm {
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Two equal columns */
-            gap: 20px 30px; /* Row gap and Column gap */
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
         }
 
-        /* Full width elements span both columns (Only for button group) */
-        #controls button,
-        .button-group {
-            grid-column: 1 / -1;
+        .form-section, .preview-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1, h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 28px;
         }
 
         .form-group {
-            margin: 0; /* Resetting default margin */
+            margin-bottom: 20px;
         }
 
-        /* Styling for Labels */
-        #controls label {
+        label {
             display: block;
-            width: 100%;
-            margin-bottom: 6px; 
-            margin-top: 0; 
-            font-weight: 700; 
-            color: var(--dark-green);
-            font-size: 0.95em;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
         }
 
-        /* Styling for Inputs and Textareas */
-        #controls input, #controls textarea {
-            display: block;
+        input[type="text"], textarea {
             width: 100%;
-            margin-bottom: 0; 
-            box-sizing: border-box;
-            border-radius: 8px; 
-            border: 1px solid #ccc;
-            padding: 12px 15px; 
-            transition: all 0.2s ease-in-out;
-            font-size: 1em;
-            color: var(--text-color-dark);
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
         }
-        
-        /* Focus effect for inputs */
-        #controls input:focus, #controls textarea:focus {
+
+        input[type="text"]:focus, textarea:focus {
             outline: none;
-            border-color: var(--theme-color);
-            box-shadow: 0 0 0 3px rgba(115, 164, 65, 0.3); 
+            border-color: #667eea;
         }
 
-        #controls textarea { 
-            height: 90px; 
-            resize: vertical; 
-        } 
-        
-        /* Button Styling */
-        #controls button {
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            border-radius: 8px;
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
             color: white;
-            padding: 14px; 
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            margin-top: 0; 
-        }
-        
-        /* Generate Button (Primary) */
-        #controls button:first-of-type { 
-            background-color: var(--theme-color);
-            margin-top: 10px; /* Slight extra margin above buttons */
-        }
-
-        /* Download Button (Secondary, Darker Green) */
-        #controls button:nth-of-type(2) { 
-            background-color: var(--dark-green);
-        }
-
-        #controls button:hover {
-            opacity: 0.95;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
-        }
-
-        /* Special alignment for buttons row (make buttons align horizontally) */
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0 30px;
-            grid-column: 1 / -1; /* Ensure this group spans full width */
-            margin-top: 10px;
-        }
-        .button-group button {
-            margin-top: 0 !important;
-        }
-
-        /* --- Banner Container and Layout - FIXED DIMENSIONS --- */
-        #banner-container {
-            width: 800px; /* Fixed width */
-            height: 508px; /* Fixed height */
-            max-width: none; 
-            aspect-ratio: auto; 
-            box-shadow: 0 0 25px rgba(0,0,0,0.4);
             border-radius: 8px;
-            overflow: hidden;
+            cursor: pointer;
+            transition: background 0.3s;
         }
 
-        #medical-banner {
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            position: relative;
-            color: var(--text-color-dark);
-            padding: 0;
-            box-sizing: border-box;
-          
-    background-image: url(l.png);
-    background-position: 443px 172px;
-    background-repeat: no-repeat;
-    background-size: 210px;
+        .file-upload-btn:hover {
+            background: #5568d3;
         }
 
-        /* --- Right Background Zone (20% width of 800px = 160px) --- */
-        .right-green-zone {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 20%; 
-            height: 100%;
-            background-color: var(--theme-color);
-            z-index: 5; 
-            /* Pattern for green zone */
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23648e3d' fill-opacity='0.2'%3E%3Cpath fill-rule='evenodd' d='M0 0h40v40H0V0zm40 40h40v40H40V40z'/%3E%3C/g%3E%3C/svg%3E");
-        }
-        
-        /* --- Top Left Section: Logo --- */
-        .banner-top-left {
-            position: absolute;
-            top: 4%; 
-            left: 4%;
-            z-index: 20;
+        .file-name {
+            margin-left: 10px;
+            color: #666;
+            font-size: 13px;
         }
 
-        /* --- Doctor Photo - FIXED SIZE --- */
-        .doctor-photo-circle {
-            position: absolute;
-            top: 19%; 
-            left: 70%; 
-            transform: translateY(-50%); 
-            width: 140px; 
-            height: 140px; 
-            max-width: none; 
-            max-height: none;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 6px solid white; 
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            background-color: var(--light-bg);
-            z-index: 10; 
-        }
-
-        #outputDoctorImage {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center top; 
-        }
-
-        /* --- Specialties Section --- */
-        .specialties-section {
-            position: absolute;
-            top: 3%; 
-            left: 4%;
-            width: 70%; 
-            padding: 10px 0;
-            z-index: 5;
-        }
-
-        #outputSpecialties {
-            font-size: 24px !important; 
-            line-height: 1.2;
-            color: var(--text-color-specialty);
-            font-weight: 700;
-        }
-
-        /* --- Doctor Info Section (Name & Degrees) --- */
-        .doctor-info-section {
-            position: absolute;
-            top: 17%; 
-            left: 4%;
-            width: 70%; 
-            z-index: 5;
-        }
-        
-        /* Thin separator line */
-        .info-separator {
-            width: 100%;
-            height: 3px;
-            background-color: var(--theme-color);
-            margin: 10px 0 20px 0;
-            border-radius: 1.5px;
-        }
-
-        #outputDoctorName {
-            font-size: 30px; 
-            color: var(--dark-green);
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 10px; 
-            text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.2);
-        }
-
-        .degrees-list {
-            font-size: 17px; 
-            line-height: 1.7; 
-            color: var(--text-color-dark);
-            padding-right: 5%; 
-        }
-
-        /* --- Contact Info Section (Full Width Bottom Bar) --- */
-        .contact-info-section {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%; 
-            padding: 15px 4%; 
-            background-color: var(--dark-green);
-            color: var(--text-color-light);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-sizing: border-box;
-            z-index: 20;
-        }
-
-        .address-box {
-            width: 65%; 
-            font-size: 14px; 
-            line-height: 1.4;
-            border-left: 5px solid white;
-            padding-left: 15px;
-        }
-
-        .contact-box {
-            width: 30%; 
-            text-align: right;
+        .btn-group {
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
-        }
-        
-        .contact-label {
-            font-size: 13px; 
-            font-weight: 400;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 3px;
+            gap: 10px;
+            margin-top: 30px;
         }
 
-        .contact-number {
-            font-size: 20px; 
-            font-weight: 700;
-            color: var(--text-color-light);
-            padding: 0 5px; 
-            border-radius: 4px;
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(56, 239, 125, 0.4);
+        }
+
+        #bannerCanvas {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="form-section">
+            <h1>🏥 ডাক্তার ব্যানার জেনারেটর</h1>
+            
+            <div class="form-group">
+                <label>ডাক্তারের নাম:</label>
+                <input type="text" id="doctorName" placeholder="ডাঃ সুদিপ চন্দ্র দাস">
+            </div>
 
-    <div id="controls">
-        <div class="controls-header">
-            <h2>Banner Input Form</h2>
+            <div class="form-group">
+                <label>বিশেষত্ব (একক লাইন):</label>
+                <input type="text" id="specialty" placeholder="মেডিসিন বিশেষজ্ঞ">
+            </div>
+
+            <div class="form-group">
+                <label>ডিগ্রি এবং অধিভুক্তি (নতুন লাইনের জন্য Enter ব্যবহার করুন):</label>
+                <textarea id="degrees" placeholder="এমবিবিএস, বিপিএল (স্বাস্থ্য) এমডি (মেডিসিন), বিএসএমএমইউ এমএসিপি (আমেরিকা)">এমবিবিএস, বিপিএল (স্বাস্থ্য) এমডি (মেডিসিন), বিএসএমএমইউ এমএসিপি (আমেরিকা)</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>ক্লিনিক তথ্য (প্রতিটি লাইনে: ক্লিনিক নাম, ঠিকানা, চেম্বার সময়):</label>
+                <textarea id="clinicInfo" placeholder="শতাব্দী মেডিকেল সার্ভিস&#10;৩৩, রূপস, নিরের মহল্লা , সিলেট&#10;চেম্বার সময়: শনিবার থেকে বৃহস্পতিবার (জুম্মার বাদ)">শতাব্দী মেডিকেল সার্ভিস
+৩৩, রূপস, নিরের মহল্লা , সিলেট
+চেম্বার সময়: শনিবার থেকে বৃহস্পতিবার (জুম্মার বাদ)</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>যোগাযোগ নম্বর (সিরিয়ালের জন্য):</label>
+                <input type="text" id="contact" placeholder="01732-328633" value="01732-328633">
+            </div>
+
+            <div class="form-group">
+                <label>ডাক্তারের ছবি (আপলোড):</label>
+                <label class="file-upload-btn" for="doctorImage">ছবি নির্বাচন করুন</label>
+                <input type="file" id="doctorImage" accept="image/*">
+                <span class="file-name" id="fileName"></span>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-generate" onclick="generateBanner()">ব্যানার তৈরি করুন</button>
+                <button class="btn-download" onclick="downloadBanner()">WebP হিসাবে ডাউনলোড করুন</button>
+            </div>
         </div>
-        <form id="bannerForm">
-            
-            <!-- Row 1, Col 1: Doctor's Name -->
-            <div class="form-group">
-                <label for="doctorName">Doctor's Name:</label>
-                <input type="text" id="doctorName" value="" placeholder="Doctor's Name">
-            </div>
 
-            <!-- Row 1, Col 2: Specialties (NOW SINGLE-LINE INPUT) -->
-            <div class="form-group">
-                <label for="specialties">Specialties (Single Line):</label>
-                <input type="text" id="specialties" placeholder="Specialties">
-            </div>
-
-            <!-- Row 2, Col 1: Degrees & Affiliation (Textarea) -->
-            <div class="form-group">
-                <label for="degrees">Degrees & Affiliation (Use Enter/Newline for new line):</label>
-                <textarea id="degrees" placeholder="Degrees & Affiliation"></textarea>
-            </div>
-
-            <!-- Row 2, Col 2: Address (Textarea) -->
-            <div class="form-group">
-                <label for="address">Address (Use Enter/Newline for line breaks):</label>
-                <textarea id="address" placeholder="Address"></textarea>
-            </div>
-            
-            <!-- Row 3, Col 1: Contact Number (MOVED HERE) -->
-            <div class="form-group">
-                <label for="contact">Contact Number (সিরিয়ালের জন্য):</label>
-                <input type="text" id="contact" value="" placeholder="Contact Number">
-            </div>
-
-            <!-- Row 3, Col 2: Doctor Image Upload -->
-            <div class="form-group">
-                <label for="imageUpload">Doctor Image (Upload):</label>
-                <input type="file" id="imageUpload" accept="image/*">
-            </div>
-
-            <!-- Full Width Button Group -->
-            <div class="button-group">
-                <button type="button" onclick="generateBanner()">Generate Banner</button>
-                <button type="button" onclick="downloadBanner()">Download as PNG (High Quality)</button>
-            </div>
-        </form>
-    </div>
-
-    <div id="banner-container">
-        <!-- The Banner Output Area --><div id="medical-banner">
-            
-            <!-- Right Green Zone (Background for Photo) --><div class="right-green-zone"></div>
-            
-            <!-- Doctor Photo (Fixed size and position) --><div class="doctor-photo-circle">
-                <!-- Placeholder doctor image (Themed for better look) --><img id="outputDoctorImage" src="https://placehold.co/300x300/3D5523/FFFFFF?text=Doctor" alt="Doctor Photo">
-            </div>
-
-            <!-- Logo Section --><div class="banner-top-left">
-            </div>
-            
-            <!-- Specialties Section --><div class="specialties-section">
-                <h2 id="outputSpecialties"></h2>
-            </div>
-
-            <!-- Doctor Info Section (Name & Degrees) --><div class="doctor-info-section">
-                <div class="info-separator"></div>
-                <h3 id="outputDoctorName"></h3>
-                <div id="outputDegrees" class="degrees-list"></div>
-            </div>
-
-            <!-- Contact Info Section (Full Width Bottom Bar) --><div class="contact-info-section">
-                <div class="address-box">
-                    <div id="outputAddress"></div>
-                </div>
-                <div class="contact-box">
-                    <div class="contact-label">সিরিয়ালের জন্য</div>
-                    <div id="outputContact" class="contact-number"></div>
-                </div>
+        <div class="preview-section">
+            <h2>📋 প্রিভিউ</h2>
+            <div class="canvas-container">
+                <canvas id="bannerCanvas"></canvas>
             </div>
         </div>
     </div>
 
     <script>
-        // Function to generate the banner content
-        function generateBanner() {
-            // Get values from the form
-            const doctorName = document.getElementById('doctorName').value;
-            const specialties = document.getElementById('specialties').value;
-            const degrees = document.getElementById('degrees').value;
-            const address = document.getElementById('address').value;
-            const contact = document.getElementById('contact').value;
-            const imageFile = document.getElementById('imageUpload').files[0];
+        let doctorImageData = null;
 
-            // Update the banner elements
-            
-            // Specialties is now a single-line input. Use innerText.
-            document.getElementById('outputSpecialties').innerText = specialties || "বিশেষজ্ঞ (Specialist)";
-            
-            // Keep newline replacement for Doctor Name, Degrees, and Address (which are still multi-line fields)
-            document.getElementById('outputDoctorName').innerHTML = doctorName ? doctorName.replace(/\n/g, '<br>') : "Doctor Name";
-            document.getElementById('outputDegrees').innerHTML = degrees ? degrees.replace(/\n/g, '<br>') : "Degrees and Affiliations";
-            document.getElementById('outputAddress').innerHTML = address ? address.replace(/\n/g, '<br>') : "Clinic Address, City, Post Code";
-            document.getElementById('outputContact').innerText = contact || "Phone Number";
-
-            // Handle image upload
-            if (imageFile) {
+        document.getElementById('doctorImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = file.name;
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('outputDoctorImage').src = e.target.result;
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        doctorImageData = img;
+                        generateBanner();
+                    };
+                    img.src = event.target.result;
                 };
-                reader.readAsDataURL(imageFile);
-            } else {
-                // Set a default placeholder if no image is uploaded (using themed placeholder)
-                document.getElementById('outputDoctorImage').src = 'https://placehold.co/300x300/3D5523/FFFFFF?text=Doctor'; 
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function generateBanner() {
+            const canvas = document.getElementById('bannerCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size to higher resolution (1200x780 maintains aspect ratio)
+            canvas.width = 1200;
+            canvas.height = 780;
+
+            // White background for main area
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, 960, 780);
+
+            // Green right section gradient
+            const greenGradient = ctx.createLinearGradient(960, 0, 1200, 780);
+            greenGradient.addColorStop(0, '#7cb342');
+            greenGradient.addColorStop(1, '#558b2f');
+            ctx.fillStyle = greenGradient;
+            ctx.fillRect(960, 0, 240, 600);
+
+            // Add decorative medical graphics on green section
+            ctx.save();
+            
+            // Medical cross patterns
+            ctx.globalAlpha = 0.12;
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 68px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('✚', 1080, 360);
+            ctx.fillText('✚', 1020, 480);
+            ctx.fillText('✚', 1140, 465);
+            
+            // Heartbeat line pattern
+            ctx.globalAlpha = 0.15;
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(975, 405);
+            ctx.lineTo(1005, 405);
+            ctx.lineTo(1020, 375);
+            ctx.lineTo(1035, 435);
+            ctx.lineTo(1050, 405);
+            ctx.lineTo(1185, 405);
+            ctx.stroke();
+            
+            // Medical pills/capsules
+            ctx.globalAlpha = 0.1;
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(998, 285, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(998, 273, 30, 24);
+            ctx.beginPath();
+            ctx.arc(1028, 285, 12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Stethoscope shape
+            ctx.globalAlpha = 0.08;
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.arc(1125, 300, 22, 0, Math.PI);
+            ctx.lineTo(1125, 360);
+            ctx.stroke();
+            
+            ctx.restore();
+
+            // Red header text
+            ctx.fillStyle = '#d32f2f';
+            ctx.font = 'bold 33px Arial';
+            ctx.textAlign = 'left';
+            const specialty = document.getElementById('specialty').value || 'মেডিসিন বিশেষজ্ঞ';
+            ctx.fillText(specialty, 52, 82);
+
+            // Green line under header
+            ctx.fillStyle = '#7cb342';
+            ctx.fillRect(52, 102, 795, 4);
+
+            // Doctor's name
+            const doctorName = document.getElementById('doctorName').value || 'ডাঃ সুদিপ চন্দ্র দাস';
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 57px Arial';
+            ctx.fillText(doctorName, 52, 188);
+
+            // Degrees
+            const degrees = document.getElementById('degrees').value || 'এমবিবিএস, বিপিএল (স্বাস্থ্য) এমডি (মেডিসিন), বিএসএমএমইউ এমএসিপি (আমেরিকা)';
+            ctx.fillStyle = '#555';
+            ctx.font = '22px Arial';
+            const degreeLines = degrees.split('\n').filter(line => line.trim());
+            let degreeY = 248;
+            degreeLines.forEach(line => {
+                ctx.fillText(line, 52, degreeY);
+                degreeY += 36;
+            });
+
+            // Dark green bottom section
+            ctx.fillStyle = '#3d5a3d';
+            ctx.fillRect(0, 600, 1200, 180);
+
+            // Clinic info in bottom section
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 24px Arial';
+            
+            const clinicInfo = document.getElementById('clinicInfo').value || 'শতাব্দী মেডিকেল সার্ভিস\n৩৩, রূপস, নিরের মহল্লা , সিলেট\nচেম্বার সময়: শনিবার থেকে বৃহস্পতিবার (জুম্মার বাদ)';
+            const clinicLines = clinicInfo.split('\n').filter(line => line.trim());
+            
+            let clinicY = 645;
+            clinicLines.forEach((line, index) => {
+                if (index === 0) {
+                    ctx.font = 'bold 24px Arial';
+                    ctx.fillText(line, 75, clinicY);
+                } else {
+                    ctx.font = '21px Arial';
+                    ctx.fillText(line, 75, clinicY);
+                }
+                clinicY += 38;
+            });
+
+            // Contact info (right side)
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText('সিরিয়ালের জন্য', 1125, 652);
+            ctx.font = 'bold 33px Arial';
+            const contact = document.getElementById('contact').value || '01732-328633';
+            ctx.fillText(contact, 1125, 698);
+
+            // Doctor's image (circular) - top right with margins
+            if (doctorImageData) {
+                ctx.save();
+                const imgSize = 210;
+                const imgX = canvas.width - 150 - imgSize/2; // 150px margin from right (scaled)
+                const imgY = 75 + imgSize/2; // 75px margin from top (scaled)
+                
+                // White circle background
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(imgX, imgY, imgSize/2 + 12, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Clip to circle for image
+                ctx.beginPath();
+                ctx.arc(imgX, imgY, imgSize/2, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.clip();
+                
+                ctx.drawImage(doctorImageData, imgX - imgSize/2, imgY - imgSize/2, imgSize, imgSize);
+                ctx.restore();
+
+                // Green border around image
+                ctx.strokeStyle = '#7cb342';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.arc(imgX, imgY, imgSize/2 + 3, 0, Math.PI * 2);
+                ctx.stroke();
             }
         }
 
-        // Function for downloading as PNG using html2canvas (reliable browser conversion)
-        function downloadBanner() {
-            const banner = document.getElementById('medical-banner');
-            const doctorName = document.getElementById('doctorName').value.trim();
-            
-            // Minimal Sanitization: Only remove characters that are strictly invalid in file paths 
-            const cleanName = doctorName.replace(/[\\/:*?"<>|]/g, '').trim(); 
-            
-            const fileName = (cleanName || 'medical_banner') + '.png'; 
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            let currentY = y;
 
-            // Use html2canvas to render the content to a canvas
-            html2canvas(banner, {
-                // Increase scale for higher resolution output (e.g., 3x resolution)
-                scale: 3 
-            }).then(function(canvas) {
-                // Convert the canvas to a PNG image data URL
-                const dataUrl = canvas.toDataURL('image/png', 1.0);
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                const metrics = ctx.measureText(testLine);
+                const testWidth = metrics.width;
                 
-                // Create a temporary link element for download
-                const link = document.createElement('a');
-                link.download = fileName; // Set the dynamic Bengali filename
-                link.href = dataUrl;
-                link.click();
-
-                console.log(`Downloaded banner as ${fileName}.`);
-            });
+                if (testWidth > maxWidth && n > 0) {
+                    ctx.fillText(line, x, currentY);
+                    line = words[n] + ' ';
+                    currentY += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, x, currentY);
         }
 
-        // Initial banner generation on load
-        window.onload = generateBanner;
-    </script>
+        function downloadBanner() {
+            const canvas = document.getElementById('bannerCanvas');
+            
+            if (canvas.width === 0 || canvas.height === 0) {
+                alert('প্রথমে ব্যানার তৈরি করুন!');
+                return;
+            }
 
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                const doctorName = document.getElementById('doctorName').value || 'doctor_banner';
+                
+                // Convert Bengali to English transliteration or use sanitized name
+                let fileName = doctorName
+                    .replace(/ডাঃ|ডা:|ড:|Dr\.|Dr/gi, '') // Remove doctor prefix
+                    .trim()
+                    .replace(/\s+/g, '_') // Replace spaces with underscore
+                    .toLowerCase();
+                
+                // If filename is still in Bengali or empty, use default
+                if (!fileName || /[\u0980-\u09FF]/.test(fileName)) {
+                    fileName = 'doctor_banner';
+                }
+                
+                link.href = url;
+                link.download = `${fileName}.webp`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 'image/webp', 0.95);
+        }
+
+        // Generate initial banner on page load
+        window.onload = function() {
+            generateBanner();
+        };
+    </script>
 </body>
 </html>
