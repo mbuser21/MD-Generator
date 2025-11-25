@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ডাক্তার ব্যানার জেনারেটর</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
@@ -12,7 +14,7 @@
         }
 
         body {
-            font-family: 'Kalpurush', 'Noto Sans Bengali', sans-serif;
+            font-family: 'Noto Sans Bengali', 'Kalpurush', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -63,6 +65,23 @@
         }
 
         input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+            background: white;
+            cursor: pointer;
+        }
+
+        select:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -168,6 +187,16 @@
             </div>
 
             <div class="form-group">
+                <label>রঙের থিম নির্বাচন করুন:</label>
+                <select id="colorScheme" onchange="generateBanner()">
+                    <option value="green">সবুজ থিম (ডিফল্ট)</option>
+                    <option value="blue">নীল থিম</option>
+                    <option value="purple">বেগুনি থিম</option>
+                    <option value="teal">টিল থিম</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label>বিশেষত্ব (একক লাইন):</label>
                 <input type="text" id="specialty" placeholder="মেডিসিন বিশেষজ্ঞ">
             </div>
@@ -196,6 +225,13 @@
                 <span class="file-name" id="fileName"></span>
             </div>
 
+            <div class="form-group">
+                <label>লোগো ওয়াটারমার্ক (ঐচ্ছিক):</label>
+                <label class="file-upload-btn" for="logoImage">লোগো নির্বাচন করুন</label>
+                <input type="file" id="logoImage" accept="image/*">
+                <span class="file-name" id="logoFileName"></span>
+            </div>
+
             <div class="btn-group">
                 <button class="btn-generate" onclick="generateBanner()">ব্যানার তৈরি করুন</button>
                 <button class="btn-download" onclick="downloadBanner()">WebP হিসাবে ডাউনলোড করুন</button>
@@ -212,6 +248,22 @@
 
     <script>
         let doctorImageData = null;
+        let logoImageData = null;
+        let fontLoaded = false;
+
+        // Load Noto Sans Bengali font for canvas (more reliable than Kalpurush)
+        const bengaliFont = new FontFace('Noto Sans Bengali', 'url(https://fonts.gstatic.com/s/notosansbengali/v20/Cn-SJsCGWQxOjaGwMQ6fIiMywrNJIky6nvd8BjzVMvJx2mcSPVFpVEqE-6KmsolKudCk8izI0lc.woff2)');
+        
+        bengaliFont.load().then(function(loadedFont) {
+            document.fonts.add(loadedFont);
+            fontLoaded = true;
+            console.log('Bengali font loaded successfully');
+            generateBanner();
+        }).catch(function(error) {
+            console.log('Font loading failed, using system fonts');
+            fontLoaded = true;
+            generateBanner();
+        });
 
         document.getElementById('doctorImage').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -230,7 +282,26 @@
             }
         });
 
+        document.getElementById('logoImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('logoFileName').textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        logoImageData = img;
+                        generateBanner();
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
         function generateBanner() {
+            if (!fontLoaded) return; // Wait for font to load
+            
             const canvas = document.getElementById('bannerCanvas');
             const ctx = canvas.getContext('2d');
             
@@ -238,14 +309,18 @@
             canvas.width = 1200;
             canvas.height = 780;
 
+            // Get selected color scheme
+            const colorScheme = document.getElementById('colorScheme').value;
+            const colors = getColorScheme(colorScheme);
+
             // White background for main area
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, 960, 780);
 
-            // Green right section gradient
+            // Right section gradient with selected color
             const greenGradient = ctx.createLinearGradient(960, 0, 1200, 780);
-            greenGradient.addColorStop(0, '#7cb342');
-            greenGradient.addColorStop(1, '#558b2f');
+            greenGradient.addColorStop(0, colors.gradientStart);
+            greenGradient.addColorStop(1, colors.gradientEnd);
             ctx.fillStyle = greenGradient;
             ctx.fillRect(960, 0, 240, 600);
 
@@ -296,41 +371,46 @@
             
             ctx.restore();
 
-            // Red header text
+            // Calculate doctor image position for reference
+            const imgSize = 210;
+            const imgX = canvas.width - 150 - imgSize/2;
+            const imgCenterY = 75 + imgSize/2; // Center Y of the doctor photo
+
+            // Red header text - positioned above the green line
             ctx.fillStyle = '#d32f2f';
-            ctx.font = 'bold 33px Arial';
+            ctx.font = 'bold 34px "Noto Sans Bengali", Arial, sans-serif';
             ctx.textAlign = 'left';
             const specialty = document.getElementById('specialty').value || 'মেডিসিন বিশেষজ্ঞ';
-            ctx.fillText(specialty, 52, 82);
+            ctx.fillText(specialty, 52, imgCenterY - 25);
 
-            // Green line under header
-            ctx.fillStyle = '#7cb342';
-            ctx.fillRect(52, 102, 795, 4);
+            // Green line horizontally aligned with doctor photo center
+            ctx.fillStyle = colors.accentLine;
+            ctx.fillRect(52, imgCenterY, imgX - 52 - 30, 4);
 
-            // Doctor's name
+            // Doctor's name - positioned below the green line
             const doctorName = document.getElementById('doctorName').value || 'ডাঃ সুদিপ চন্দ্র দাস';
             ctx.fillStyle = '#2c3e50';
-            ctx.font = 'bold 57px Arial';
-            ctx.fillText(doctorName, 52, 188);
+            ctx.font = 'bold 58px "Noto Sans Bengali", Arial, sans-serif';
+            ctx.fillText(doctorName, 52, imgCenterY + 70);
 
-            // Degrees
+            // Degrees - positioned below doctor's name
             const degrees = document.getElementById('degrees').value || 'এমবিবিএস, বিপিএল (স্বাস্থ্য) এমডি (মেডিসিন), বিএসএমএমইউ এমএসিপি (আমেরিকা)';
-            ctx.fillStyle = '#555';
-            ctx.font = '22px Arial';
+            ctx.fillStyle = '#333';
+            ctx.font = '23px "Noto Sans Bengali", Arial, sans-serif';
             const degreeLines = degrees.split('\n').filter(line => line.trim());
-            let degreeY = 248;
+            let degreeY = imgCenterY + 115;
             degreeLines.forEach(line => {
                 ctx.fillText(line, 52, degreeY);
                 degreeY += 36;
             });
 
             // Dark green bottom section
-            ctx.fillStyle = '#3d5a3d';
+            ctx.fillStyle = colors.bottomBar;
             ctx.fillRect(0, 600, 1200, 180);
 
             // Clinic info in bottom section
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 24px Arial';
+            ctx.font = 'bold 25px "Noto Sans Bengali", Arial, sans-serif';
             
             const clinicInfo = document.getElementById('clinicInfo').value || 'শতাব্দী মেডিকেল সার্ভিস\n৩৩, রূপস, নিরের মহল্লা , সিলেট\nচেম্বার সময়: শনিবার থেকে বৃহস্পতিবার (জুম্মার বাদ)';
             const clinicLines = clinicInfo.split('\n').filter(line => line.trim());
@@ -338,20 +418,20 @@
             let clinicY = 645;
             clinicLines.forEach((line, index) => {
                 if (index === 0) {
-                    ctx.font = 'bold 24px Arial';
+                    ctx.font = 'bold 25px "Noto Sans Bengali", Arial, sans-serif';
                     ctx.fillText(line, 75, clinicY);
                 } else {
-                    ctx.font = '21px Arial';
+                    ctx.font = '22px "Noto Sans Bengali", Arial, sans-serif';
                     ctx.fillText(line, 75, clinicY);
                 }
                 clinicY += 38;
             });
 
             // Contact info (right side)
-            ctx.font = '20px Arial';
+            ctx.font = '21px "Noto Sans Bengali", Arial, sans-serif';
             ctx.textAlign = 'right';
             ctx.fillText('সিরিয়ালের জন্য', 1125, 652);
-            ctx.font = 'bold 33px Arial';
+            ctx.font = 'bold 34px "Noto Sans Bengali", Arial, sans-serif';
             const contact = document.getElementById('contact').value || '01732-328633';
             ctx.fillText(contact, 1125, 698);
 
@@ -377,13 +457,78 @@
                 ctx.drawImage(doctorImageData, imgX - imgSize/2, imgY - imgSize/2, imgSize, imgSize);
                 ctx.restore();
 
-                // Green border around image
-                ctx.strokeStyle = '#7cb342';
+                // Border around image with theme color
+                ctx.strokeStyle = colors.imageBorder;
                 ctx.lineWidth = 6;
                 ctx.beginPath();
                 ctx.arc(imgX, imgY, imgSize/2 + 3, 0, Math.PI * 2);
                 ctx.stroke();
             }
+
+            // Logo watermark in bottom right of white section
+            if (logoImageData) {
+                ctx.save();
+                const logoMaxWidth = 180;
+                const logoMaxHeight = 180;
+                const logoPadding = 40;
+                
+                // Calculate logo size maintaining aspect ratio
+                let logoWidth = logoImageData.width;
+                let logoHeight = logoImageData.height;
+                const logoAspect = logoWidth / logoHeight;
+                
+                if (logoWidth > logoMaxWidth) {
+                    logoWidth = logoMaxWidth;
+                    logoHeight = logoWidth / logoAspect;
+                }
+                if (logoHeight > logoMaxHeight) {
+                    logoHeight = logoMaxHeight;
+                    logoWidth = logoHeight * logoAspect;
+                }
+                
+                // Position in bottom right of white section
+                const logoX = 960 - logoWidth - logoPadding;
+                const logoY = 600 - logoHeight - logoPadding;
+                
+                // Reduced opacity watermark (40%)
+                ctx.globalAlpha = 0.4;
+                ctx.drawImage(logoImageData, logoX, logoY, logoWidth, logoHeight);
+                ctx.restore();
+            }
+        }
+
+        function getColorScheme(scheme) {
+            const schemes = {
+                green: {
+                    gradientStart: '#7cb342',
+                    gradientEnd: '#558b2f',
+                    accentLine: '#7cb342',
+                    bottomBar: '#3d5a3d',
+                    imageBorder: '#7cb342'
+                },
+                blue: {
+                    gradientStart: '#42a5f5',
+                    gradientEnd: '#1976d2',
+                    accentLine: '#42a5f5',
+                    bottomBar: '#1565c0',
+                    imageBorder: '#42a5f5'
+                },
+                purple: {
+                    gradientStart: '#ab47bc',
+                    gradientEnd: '#7b1fa2',
+                    accentLine: '#ab47bc',
+                    bottomBar: '#6a1b9a',
+                    imageBorder: '#ab47bc'
+                },
+                teal: {
+                    gradientStart: '#26a69a',
+                    gradientEnd: '#00796b',
+                    accentLine: '#26a69a',
+                    bottomBar: '#00695c',
+                    imageBorder: '#26a69a'
+                }
+            };
+            return schemes[scheme] || schemes.green;
         }
 
         function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
@@ -420,15 +565,13 @@
                 const link = document.createElement('a');
                 const doctorName = document.getElementById('doctorName').value || 'doctor_banner';
                 
-                // Convert Bengali to English transliteration or use sanitized name
+                // Use the exact name from input field (can be Bengali or English)
                 let fileName = doctorName
-                    .replace(/ডাঃ|ডা:|ড:|Dr\.|Dr/gi, '') // Remove doctor prefix
                     .trim()
-                    .replace(/\s+/g, '_') // Replace spaces with underscore
-                    .toLowerCase();
+                    .replace(/\s+/g, '_'); // Replace spaces with underscore
                 
-                // If filename is still in Bengali or empty, use default
-                if (!fileName || /[\u0980-\u09FF]/.test(fileName)) {
+                // If filename is empty, use default
+                if (!fileName) {
                     fileName = 'doctor_banner';
                 }
                 
@@ -438,12 +581,12 @@
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
-            }, 'image/webp', 0.95);
+            }, 'image/webp', 0.80);
         }
 
         // Generate initial banner on page load
         window.onload = function() {
-            generateBanner();
+            // Font loading is handled above, will auto-generate when ready
         };
     </script>
 </body>
